@@ -6,13 +6,14 @@
 int main(void) {
     printf("Welcome to Telpos!\n");
 
+    // UTF-8 для консолі
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
     addCommand("help", help);
     addCommand("echo", echo);
     addCommand("logo", logo);
-
-    // Changes encoding to UTF-8
-    SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);
+    addCommand("theme", theme);
 
     char input[256];
     char *argv[10];
@@ -20,7 +21,7 @@ int main(void) {
 
     while (1) {
         printf(">>> ");
-        fgets(input, 256, stdin);
+        if (!fgets(input, 256, stdin)) break;
 
         argc = 0;
         char *token = strtok(input, " \n");
@@ -32,7 +33,7 @@ int main(void) {
         if (argc == 0) continue;
 
         int found = 0;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < commandsCount; i++) {
             if (strcmp(commands[i].name, argv[0]) == 0) {
                 commands[i].func(argc, argv);
                 found = 1;
@@ -40,7 +41,7 @@ int main(void) {
             }
         }
 
-        if (found == 0) {
+        if (!found) {
             if (strcmp("exit", argv[0]) == 0) break;
             else printf("Unknown command: %s\n", argv[0]);
         }
