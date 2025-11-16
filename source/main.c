@@ -14,6 +14,7 @@ int main(void) {
     addCommand("echo", echo);
     addCommand("logo", logo);
     addCommand("theme", theme);
+    addCommand("clear", clear);
 
     char input[256];
     char *argv[10];

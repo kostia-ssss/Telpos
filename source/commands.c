@@ -66,3 +66,27 @@ int theme(int argc, char *argv[]) {
     SetConsoleTextAttribute(hConsole, textColor | (bgColor << 4));
     return 0;
 }
+
+int clear(int argc, char *argv[]) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    DWORD count;
+    DWORD cellCount;
+
+    if (hConsole == INVALID_HANDLE_VALUE) return 0;
+
+    // Отримати інформацію про консоль
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) return 0;
+    cellCount = csbi.dwSize.X * csbi.dwSize.Y;
+
+    // Заповнити пробілами
+    FillConsoleOutputCharacter(hConsole, ' ', cellCount, (COORD){0, 0}, &count);
+
+    // Відновити атрибути кольору
+    FillConsoleOutputAttribute(hConsole, csbi.wAttributes, cellCount, (COORD){0, 0}, &count);
+
+    // Перемістити курсор в початок
+    SetConsoleCursorPosition(hConsole, (COORD){0, 0});
+
+    return 0;
+}
