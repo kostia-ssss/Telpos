@@ -90,3 +90,49 @@ int clear(int argc, char *argv[]) {
 
     return 0;
 }
+
+int timer(int argc, char *argv[]) {
+    if (argc == 2) {
+        int seconds = atoi(argv[1]);
+
+        for (int i = seconds; i >= 0; i--) {
+            printf("\rRemains %d seconds   ", i);
+            Sleep(1000);
+        }
+    }
+
+    else if (argc == 3) {
+        int seconds = atoi(argv[1]);
+        int minutes = atoi(argv[2]);
+        int total = minutes * 60 + seconds;
+
+        for (int i = total; i >= 0; i--) {
+            printf("\rRemains %d minutes %d seconds   ", i / 60, i % 60);
+            Sleep(1000);
+        }
+    }
+
+    else if (argc == 4) {
+        int seconds = atoi(argv[1]);
+        int minutes = atoi(argv[2]);
+        int hours = atoi(argv[3]);
+
+        int total = hours * 3600 + minutes * 60 + seconds;
+
+        for (int i = total; i >= 0; i--) {
+            printf("\rRemains %d hours %d minutes %d seconds   ",
+                   i / 3600, (i / 60) % 60, i % 60);
+            Sleep(1000);
+        }
+    }
+
+    else {
+        printf("Usage:\n");
+        printf("  timer <seconds>\n");
+        printf("  timer <seconds> <minutes>\n");
+        printf("  timer <seconds> <minutes> <hours>\n");
+    }
+
+    printf("\rDone!\n");
+    return 0;
+}

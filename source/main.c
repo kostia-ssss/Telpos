@@ -15,6 +15,7 @@ int main(void) {
     addCommand("logo", logo);
     addCommand("theme", theme);
     addCommand("clear", clear);
+    addCommand("timer", timer);
 
     char input[256];
     char *argv[10];

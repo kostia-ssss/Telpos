@@ -16,5 +16,6 @@ int echo(int argc, char *argv[]);
 int logo(int argc, char *argv[]);
 int theme(int argc, char *argv[]);
 int clear(int argc, char *argv[]);
+int timer(int argc, char *argv[]);
 
 #endif
