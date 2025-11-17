@@ -2,6 +2,7 @@
 #include <string.h>
 #include "commands.h"
 #include <windows.h>
+#include "../modules/fileSystem.h"
 
 int main(void) {
     printf("Welcome to Telpos!\n");
@@ -16,6 +17,7 @@ int main(void) {
     addCommand("theme", theme);
     addCommand("clear", clear);
     addCommand("timer", timer);
+    init_fs();
 
     char input[256];
     char *argv[10];

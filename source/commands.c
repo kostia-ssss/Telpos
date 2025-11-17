@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
+#include "../utils/utils.h"
 
 Command *commands = NULL;
 int commandsCount = 0;
@@ -39,18 +40,6 @@ int logo(int argc, char *argv[]) {
     printf("  ██    ██      ██      ██      ██  ██      ██\n");
     printf("  ██    ██████  ██████  ██      ██████  ██████\n");
     return 0;
-}
-
-int colorNameToCode(const char *name) {
-    if (strcmp(name, "black") == 0) return 0;
-    if (strcmp(name, "red") == 0) return 4;
-    if (strcmp(name, "green") == 0) return 2;
-    if (strcmp(name, "yellow") == 0) return 6;
-    if (strcmp(name, "blue") == 0) return 1;
-    if (strcmp(name, "magenta") == 0) return 5;
-    if (strcmp(name, "cyan") == 0) return 3;
-    if (strcmp(name, "white") == 0) return 7;
-    return 7; // стандартний
 }
 
 int theme(int argc, char *argv[]) {
