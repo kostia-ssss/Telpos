@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
+#include "utils.h"
 
 char* readConfigValue(const char *path, const char *key) {
     FILE *file = fopen(path, "r");
@@ -35,6 +36,45 @@ char* readConfigValue(const char *path, const char *key) {
     fclose(file);
     return NULL; // ключ не знайдено
 }
+
+int writeConfigValue(const char *path, const char *key, const char *value) {
+    FILE *file = fopen(path, "r");
+    if (!file) return 0;
+
+    // Читаємо весь файл в пам'ять
+    char lines[100][256];
+    int count = 0;
+    int found = 0;
+
+    while (fgets(lines[count], sizeof(lines[count]), file) && count < 100) {
+        size_t keyLen = strlen(key);
+        if (strncmp(lines[count], key, keyLen) == 0 && lines[count][keyLen] == '=') {
+            // Заміна значення
+            snprintf(lines[count], sizeof(lines[count]), "%s=%s\n", key, value);
+            found = 1;
+        }
+        count++;
+    }
+    fclose(file);
+
+    // Якщо ключ не знайдено, додаємо його в кінець
+    if (!found) {
+        snprintf(lines[count], sizeof(lines[count]), "%s=%s\n", key, value);
+        count++;
+    }
+
+    // Записуємо назад у файл
+    file = fopen(path, "w");
+    if (!file) return 0;
+
+    for (int i = 0; i < count; i++) {
+        fputs(lines[i], file);
+    }
+
+    fclose(file);
+    return 1;
+}
+
 
 int colorNameToCode(const char *name) {
     if (strcmp(name, "black") == 0) return 0;

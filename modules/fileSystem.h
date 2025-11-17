@@ -1,6 +1,6 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef FILESYSTEM_H
+#define FILESYSTEM_H
 
-void init_fs();
+void init_fs(void); // краще явно вказати void
 
 #endif

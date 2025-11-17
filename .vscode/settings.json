@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "commands.h": "c"
+        "commands.h": "c",
+        "filesystem.h": "c",
+        "utils.h": "c",
+        "windows.h": "c"
     }
 }
