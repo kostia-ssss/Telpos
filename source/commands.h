@@ -6,8 +6,8 @@ typedef struct Command {
     int (*func)(int argc, char *argv[]);
 } Command;
 
-extern Command *commands;    // масив структур
-extern int commandsCount;    // кількість команд
+extern Command *commands; 
+extern int commandsCount; 
 
 void addCommand(char *name, int (*func)(int argc, char *argv[]));
 

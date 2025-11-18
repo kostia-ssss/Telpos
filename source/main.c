@@ -21,11 +21,9 @@ int main(void) {
     clear_();
     printf("Welcome to Telpos!\n");
 
-    // UTF-8 для консолі
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
-    // Додаємо команди
     addCommand("help", help);
     addCommand("echo", echo);
     addCommand("logo", logo);
@@ -40,12 +38,10 @@ int main(void) {
     char *argv[10];
     int argc;
 
-    // Основний цикл
     while (1) {
         printf(">>> ");
         if (!fgets(input, sizeof(input), stdin)) break;
 
-        // Розбиваємо на аргументи
         argc = 0;
         char *token = strtok(input, " \n");
         while (token != NULL && argc < 10) {
@@ -55,7 +51,6 @@ int main(void) {
 
         if (argc == 0) continue;
 
-        // Виконання команди
         int found = 0;
         for (int i = 0; i < commandsCount; i++) {
             if (strcmp(commands[i].name, argv[0]) == 0) {

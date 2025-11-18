@@ -41,11 +41,7 @@ void addCommand(char *name, int (*func)(int argc, char *argv[])) {
 
 int help(int argc, char *argv[]) {
     printf("Commands available:\n");
-    printf("help - show this message\n");
-    printf("echo - repeat what you type\n");
-    printf("logo - show Telpos logo\n");
-    printf("theme - change text and background colors\n");
-    printf("exit - exit the terminal\n");
+    for (int i = 0; i < commandsCount; i++) printf(" - %s\n", commands[i].name);
     return 0;
 }
 
@@ -67,45 +63,65 @@ int logo(int argc, char *argv[]) {
 }
 
 int theme(int argc, char *argv[]) {
-    if (argc != 3) {
-        printf("Usage: theme <textColor> <bgColor>\n");
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    // --- ЯВНА ТЕМА: theme <text> <bg>
+    if (argc == 3) {
+        int textColor = colorNameToCode(argv[1]);
+        int bgColor   = colorNameToCode(argv[2]);
+
+        if (textColor == -1 || bgColor == -1) {
+            printEvent("ERROR", "Unknown color", "red");
+            return 0;
+        }
+
+        SetConsoleTextAttribute(hConsole, textColor | (bgColor << 4));
+
+        writeConfigValue("../data/theme.cfg", "textColor", argv[1]);
+        writeConfigValue("../data/theme.cfg", "bgColor", argv[2]);
         return 0;
     }
 
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    int textColor = colorNameToCode(argv[1]);
-    int bgColor = colorNameToCode(argv[2]);
+    // --- ГОТОВІ ПРЕСЕТИ: theme <preset>
+    if (argc == 2) {
+        char textColorStr[20];
+        char bgColorStr[20];
+        int textColor, bgColor;
 
-    SetConsoleTextAttribute(hConsole, textColor | (bgColor << 4));
-    writeConfigValue("../data/theme.cfg", "textColor", argv[1]);
-    writeConfigValue("../data/theme.cfg", "bgColor", argv[2]);
+        if (strcmp(argv[1], "classic") == 0) {
+            strcpy(textColorStr, "green");
+            strcpy(bgColorStr, "black");
+        }
+        else if (strcmp(argv[1], "dark") == 0) {
+            strcpy(textColorStr, "white");
+            strcpy(bgColorStr, "black");
+        }
+        else if (strcmp(argv[1], "light") == 0) {
+            strcpy(textColorStr, "black");
+            strcpy(bgColorStr, "white");
+        }
+        else {
+            printEvent("ERROR", "Unknown theme preset", "red");
+            return 0;
+        }
+
+        textColor = colorNameToCode(textColorStr);
+        bgColor   = colorNameToCode(bgColorStr);
+
+        SetConsoleTextAttribute(hConsole, textColor | (bgColor << 4));
+
+        writeConfigValue("../data/theme.cfg", "textColor", textColorStr);
+        writeConfigValue("../data/theme.cfg", "bgColor", bgColorStr);
+        return 0;
+    }
+
+    printEvent("ERROR", "Usage: theme <textColor> <bgColor> OR theme <preset>", "red");
     return 0;
 }
 
+
 int clear(int argc, char *argv[]) {
-    (void) argc;
-    (void) argv;
-
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    DWORD count;
-    DWORD cellCount;
-
-    if (hConsole == INVALID_HANDLE_VALUE) return 0;
-
-    // Отримати інформацію про консоль
-    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) return 0;
-    cellCount = csbi.dwSize.X * csbi.dwSize.Y;
-
-    // Заповнити пробілами
-    FillConsoleOutputCharacter(hConsole, ' ', cellCount, (COORD){0, 0}, &count);
-
-    // Відновити атрибути кольору
-    FillConsoleOutputAttribute(hConsole, csbi.wAttributes, cellCount, (COORD){0, 0}, &count);
-
-    // Перемістити курсор в початок
-    SetConsoleCursorPosition(hConsole, (COORD){0, 0});
-
+    clear_();
     return 0;
 }
 

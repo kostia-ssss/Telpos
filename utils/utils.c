@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "utils.h"
+#include "../source/commands.h"
 
 char* readConfigValue(const char *path, const char *key) {
     FILE *file = fopen(path, "r");
@@ -75,7 +76,6 @@ int writeConfigValue(const char *path, const char *key, const char *value) {
     return 1;
 }
 
-
 int colorNameToCode(const char *name) {
     if (strcmp(name, "black") == 0) return 0;
     if (strcmp(name, "red") == 0) return 4;
@@ -86,4 +86,21 @@ int colorNameToCode(const char *name) {
     if (strcmp(name, "cyan") == 0) return 3;
     if (strcmp(name, "white") == 0) return 7;
     return 7; // стандартний
+}
+
+void printEvent(char *message, char *event, char *color) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    int textColor = colorNameToCode(color);
+    SetConsoleTextAttribute(hConsole, textColor);
+    printf("[%s] %s\n", event, message);
+
+    char *textC = readConfigValue("../data/theme.cfg", "textColor");
+    char *bgC = readConfigValue("../data/theme.cfg", "bgColor");
+    if (textC && bgC) {
+        char *arr[3] = {"theme", textC, bgC};
+        theme(3, arr);
+
+        free(textC);
+        free(bgC);
+    }
 }

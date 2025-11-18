@@ -4,5 +4,6 @@
 int colorNameToCode(const char *name);
 char* readConfigValue(const char *path, const char *key);
 int writeConfigValue(const char *path, const char *key, const char *value);
+void printEvent(char *message, char *event, char *color);
 
 #endif
