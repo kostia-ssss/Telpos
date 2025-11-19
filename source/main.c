@@ -39,7 +39,9 @@ int main(void) {
     int argc;
 
     while (1) {
-        printf(">>> ");
+        char buffer[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, buffer);
+        printf("%s >>> ", buffer);
         if (!fgets(input, sizeof(input), stdin)) break;
 
         argc = 0;

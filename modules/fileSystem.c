@@ -102,11 +102,49 @@ int rmdir_cmd(int argc, char *argv[]) {
     return 0;
 }
 
+int cd(int argc, char *argv[]) {
+    if (argc < 2) {
+        char buffer[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, buffer);
+        printf("%s\n", buffer);
+        return 0;
+    }
+
+    if (!SetCurrentDirectoryA(argv[1])) {
+        printf("cd: cannot access '%s'\n", argv[1]);
+        return 1;
+    }
+
+    return 0;
+}
+
+int write(int argc, char *argv[]) {
+    if (argc == 3) {
+        FILE *file = fopen(argv[2], "a");
+        if (file == NULL) {
+            printEvent("Cannot open file", "ERROR", "red");
+            return 1;
+        }
+
+        fputs(argv[1], file);      // записує текст як є
+        fputc('\n', file);         // додати новий рядок (опціонально)
+
+        fclose(file);              // закрити файл
+        return 0;
+    }
+    else {
+        printEvent("Usage: write <text> <file>", "ERROR", "red");
+        return 1;
+    }
+}
+
 void init_fs() {
     addCommand("touch", touch);
     addCommand("cat", cat);
     addCommand("ls", ls);
     addCommand("rm", rm);
+    addCommand("cd", cd);
     addCommand("mkdir", mkdir_cmd);
     addCommand("rmdir", rmdir_cmd);
+    addCommand("write", write);
 }
