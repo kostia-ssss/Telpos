@@ -119,23 +119,48 @@ int cd(int argc, char *argv[]) {
 }
 
 int write(int argc, char *argv[]) {
-    if (argc == 3) {
-        FILE *file = fopen(argv[2], "a");
-        if (file == NULL) {
-            printEvent("Cannot open file", "ERROR", "red");
-            return 1;
-        }
-
-        fputs(argv[1], file);      // записує текст як є
-        fputc('\n', file);         // додати новий рядок (опціонально)
-
-        fclose(file);              // закрити файл
-        return 0;
-    }
-    else {
+    if (argc < 3) {
         printEvent("Usage: write <text> <file>", "ERROR", "red");
+        printEvent("       write <text> -> <file>", "ERROR", "red");
         return 1;
     }
+
+    int index = -1;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "->") == 0) {
+            index = i;
+            break;
+        }
+    }
+
+    char *filename;
+    int start = 1;
+    if (index != -1) {
+        if (index + 1 >= argc) {
+            printEvent("No file specified after ->", "ERROR", "red");
+            return 1;
+        }
+        filename = argv[index + 1];
+    } else {
+        filename = argv[argc - 1];
+        index = argc - 1;
+    }
+
+    FILE *file = fopen(filename, "a");
+    if (file == NULL) {
+        printEvent("Cannot open file", "ERROR", "red");
+        return 1;
+    }
+
+    for (int i = start; i < index; i++) {
+        fputs(argv[i], file);
+        if (i < index - 1) fputc(' ', file);
+    }
+
+    fputc('\n', file);
+    fclose(file);
+
+    return 0;
 }
 
 void init_fs() {
