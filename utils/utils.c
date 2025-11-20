@@ -104,3 +104,15 @@ void printEvent(char *message, char *event, char *color) {
         free(bgC);
     }
 }
+
+void writeToFile(char *text, char *filename) {
+    FILE *file = fopen(filename, "a");
+    fprintf(file, "%s\n", text);
+    fclose(file);
+}
+
+void writeHistory(const char *command) {
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "%s/data/history.txt", baseDir);
+    writeToFile(command, path);
+}

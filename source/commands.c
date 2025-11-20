@@ -3,11 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
+#include <time.h>
 #include "../utils/utils.h"
 
 Command *commands = NULL;
 int commandsCount = 0;
 
+// --- очищення консолі ---
 int clear_(void) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -16,22 +18,17 @@ int clear_(void) {
 
     if (hConsole == INVALID_HANDLE_VALUE) return 0;
 
-    // Отримати інформацію про консоль
     if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) return 0;
     cellCount = csbi.dwSize.X * csbi.dwSize.Y;
 
-    // Заповнити пробілами
     FillConsoleOutputCharacter(hConsole, ' ', cellCount, (COORD){0, 0}, &count);
-
-    // Відновити атрибути кольору
     FillConsoleOutputAttribute(hConsole, csbi.wAttributes, cellCount, (COORD){0, 0}, &count);
-
-    // Перемістити курсор в початок
     SetConsoleCursorPosition(hConsole, (COORD){0, 0});
 
     return 0;
 }
 
+// --- додати команду ---
 void addCommand(char *name, int (*func)(int argc, char *argv[])) {
     commands = realloc(commands, sizeof(Command) * (commandsCount + 1));
     commands[commandsCount].name = name;
@@ -39,29 +36,39 @@ void addCommand(char *name, int (*func)(int argc, char *argv[])) {
     commandsCount++;
 }
 
+// --- help ---
 int help(int argc, char *argv[]) {
     printf("Commands available:\n");
-    for (int i = 0; i < commandsCount; i++) printf(" - %s\n", commands[i].name);
+    for (int i = 0; i < commandsCount; i++)
+        printf(" - %s\n", commands[i].name);
+
+    writeHistory("help");
     return 0;
 }
 
+// --- echo ---
 int echo(int argc, char *argv[]) {
-    for (int i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++)
         printf("%s ", argv[i]);
-    }
     printf("\n");
+
+    writeHistory("echo");
     return 0;
 }
 
+// --- logo ---
 int logo(int argc, char *argv[]) {
     printf("██████  ██████  ██      ██████  ██████  ██████\n");
     printf("  ██    ██      ██      ██  ██  ██  ██  ██    \n");
     printf("  ██    ██████  ██      ██████  ██  ██  ██████\n");
     printf("  ██    ██      ██      ██      ██  ██      ██\n");
     printf("  ██    ██████  ██████  ██      ██████  ██████\n");
+
+    writeHistory("logo");
     return 0;
 }
 
+// --- theme ---
 int theme(int argc, char *argv[]) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -79,6 +86,8 @@ int theme(int argc, char *argv[]) {
 
         writeConfigValue("../data/theme.cfg", "textColor", argv[1]);
         writeConfigValue("../data/theme.cfg", "bgColor", argv[2]);
+
+        writeHistory("theme");
         return 0;
     }
 
@@ -86,7 +95,6 @@ int theme(int argc, char *argv[]) {
     if (argc == 2) {
         char textColorStr[20];
         char bgColorStr[20];
-        int textColor, bgColor;
 
         if (strcmp(argv[1], "classic") == 0) {
             strcpy(textColorStr, "green");
@@ -105,13 +113,15 @@ int theme(int argc, char *argv[]) {
             return 0;
         }
 
-        textColor = colorNameToCode(textColorStr);
-        bgColor   = colorNameToCode(bgColorStr);
+        int textColor = colorNameToCode(textColorStr);
+        int bgColor   = colorNameToCode(bgColorStr);
 
         SetConsoleTextAttribute(hConsole, textColor | (bgColor << 4));
 
         writeConfigValue("../data/theme.cfg", "textColor", textColorStr);
         writeConfigValue("../data/theme.cfg", "bgColor", bgColorStr);
+
+        writeHistory("theme");
         return 0;
     }
 
@@ -119,54 +129,70 @@ int theme(int argc, char *argv[]) {
     return 0;
 }
 
-
+// --- clear ---
 int clear(int argc, char *argv[]) {
     clear_();
+    writeHistory("clear");
     return 0;
 }
 
+// --- timer ---
 int timer(int argc, char *argv[]) {
-    if (argc == 2) {
-        int seconds = atoi(argv[1]);
+    int total = 0;
 
-        for (int i = seconds; i >= 0; i--) {
-            printf("\rRemains %d seconds   ", i);
-            Sleep(1000);
-        }
-    }
-
-    else if (argc == 3) {
-        int seconds = atoi(argv[1]);
-        int minutes = atoi(argv[2]);
-        int total = minutes * 60 + seconds;
-
-        for (int i = total; i >= 0; i--) {
-            printf("\rRemains %d minutes %d seconds   ", i / 60, i % 60);
-            Sleep(1000);
-        }
-    }
-
-    else if (argc == 4) {
-        int seconds = atoi(argv[1]);
-        int minutes = atoi(argv[2]);
-        int hours = atoi(argv[3]);
-
-        int total = hours * 3600 + minutes * 60 + seconds;
-
-        for (int i = total; i >= 0; i--) {
-            printf("\rRemains %d hours %d minutes %d seconds   ",
-                   i / 3600, (i / 60) % 60, i % 60);
-            Sleep(1000);
-        }
-    }
-
+    if (argc == 2) total = atoi(argv[1]);
+    else if (argc == 3) total = atoi(argv[2]) * 60 + atoi(argv[1]);
+    else if (argc == 4) total = atoi(argv[3]) * 3600 + atoi(argv[2]) * 60 + atoi(argv[1]);
     else {
-        printf("Usage:\n");
-        printf("  timer <seconds>\n");
-        printf("  timer <seconds> <minutes>\n");
-        printf("  timer <seconds> <minutes> <hours>\n");
+        printf("Usage:\n  timer <seconds>\n  timer <seconds> <minutes>\n  timer <seconds> <minutes> <hours>\n");
+        return 0;
     }
 
-    printf("\rDone!\n");
+    for (int i = total; i >= 0; i--) {
+        printf("\rRemains %02d:%02d:%02d   ", i / 3600, (i / 60) % 60, i % 60);
+        Sleep(1000);
+    }
+
+    printf("\rDone!               \n");
+    writeHistory("timer");
     return 0;
+}
+
+// --- time ---
+int time_(int argc, char *argv[]) {
+    time_t t = time(NULL);
+    struct tm *tm_info = localtime(&t);
+
+    printf("Date and time: %02d-%02d-%04d %02d:%02d:%02d\n",
+           tm_info->tm_mday,
+           tm_info->tm_mon + 1,
+           tm_info->tm_year + 1900,
+           tm_info->tm_hour,
+           tm_info->tm_min,
+           tm_info->tm_sec);
+
+    writeHistory("time");
+    return 0;
+}
+
+// --- history ---
+int history(int argc, char *argv[]) {
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "%s/data/history.txt", baseDir);
+
+    FILE *file = fopen(path, "r");
+    if (!file) {
+        printEvent("Cannot open history file", "ERROR", "red");
+        return 0;
+    }
+
+    char line[256];
+    int lineNum = 1;
+
+    while (fgets(line, sizeof(line), file)) {
+        printf("%d: %s", lineNum++, line);
+    }
+
+    fclose(file);
+    return 1;
 }

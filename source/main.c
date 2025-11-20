@@ -6,7 +6,15 @@
 #include "../utils/utils.h"
 #include "../modules/fileSystem.h"
 
+char baseDir[MAX_PATH];
+
 int main(void) {
+    GetCurrentDirectoryA(MAX_PATH, baseDir);
+
+    // якщо запускаємо з build, піднімаємося в корінь
+    char *lastSlash = strrchr(baseDir, '\\');
+    if (lastSlash) *lastSlash = '\0';  // видаляємо "\build"
+
     char *textC = readConfigValue("../data/theme.cfg", "textColor");
     char *bgC = readConfigValue("../data/theme.cfg", "bgColor");
 
@@ -30,6 +38,8 @@ int main(void) {
     addCommand("theme", theme);
     addCommand("clear", clear);
     addCommand("timer", timer);
+    addCommand("time", time_);
+    addCommand("history", history);
 
     init_fs();
     

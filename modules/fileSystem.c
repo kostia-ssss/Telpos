@@ -3,9 +3,9 @@
 #include "../utils/utils.h"
 #include "../source/commands.h"
 
-int touch(int argc, char *argv[]) {
+int create(int argc, char *argv[]) {
     if (argc != 2) {
-        printf("Usage: touch <filename>\n");
+        printf("Usage: create <filename>\n");
         return 0;
     }
 
@@ -16,27 +16,53 @@ int touch(int argc, char *argv[]) {
     }
 
     fclose(f);
+    writeHistory("create");
     return 0;
 }
 
-int cat(int argc, char *argv[]) {
-    if (argc != 2) {
-        printf("Usage: cat <filename>\n");
+int read(int argc, char *argv[]) {
+    if (argc < 2 || argc > 3) {
+        printf("Usage: read <filename>\n");
+        printf("Usage: read <filename> <line number>\n");
         return 0;
     }
+    else if (argc == 2) {
+        FILE *file = fopen(argv[1], "r");
+        if (!file) {
+            printf("File not found: %s\n", argv[1]);
+            return 0;
+        }
 
-    FILE *file = fopen(argv[1], "r");
-    if (!file) {
-        printf("File not found: %s\n", argv[1]);
-        return 0;
+        char buffer[256];
+        while (fgets(buffer, sizeof(buffer), file)) {
+            printf("%s", buffer);
+        }
+
+        fclose(file);
+        writeHistory("read");
     }
+    else if (argc == 3) {
+        FILE *f = fopen(argv[1], "r");
+        if (!f) {
+            printf("Cannot open file\n");
+            return 1;
+        }
 
-    char buffer[256];
-    while (fgets(buffer, sizeof(buffer), file)) {
-        printf("%s", buffer);
-    }
+        int n = atoi(argv[2]);
+        char buffer[256]; 
 
-    fclose(file);
+        int current = 1;
+        while (fgets(buffer, sizeof(buffer), f)) {
+            if (current == n) {
+                printf(buffer);
+                break;
+            }
+            current++;
+        }
+
+        fclose(f);
+        writeHistory("read");
+    } 
     return 0;
 }
 
@@ -54,6 +80,7 @@ int ls(int argc, char *argv[]) {
     } while (FindNextFileA(h, &data));
 
     FindClose(h);
+    writeHistory("ls");
     return 0;
 }
 
@@ -68,6 +95,7 @@ int rm(int argc, char *argv[]) {
     } else {
         printf("Cannot delete: %s\n", argv[1]);
     }
+    writeHistory("rm");
 
     return 0;
 }
@@ -83,6 +111,7 @@ int mkdir_cmd(int argc, char *argv[]) {
     } else {
         printf("Cannot create directory: %s\n", argv[1]);
     }
+    writeHistory("mkdir");
 
     return 0;
 }
@@ -98,6 +127,7 @@ int rmdir_cmd(int argc, char *argv[]) {
     } else {
         printf("Cannot remove directory: %s\n", argv[1]);
     }
+    writeHistory("rmdir");
 
     return 0;
 }
@@ -114,6 +144,7 @@ int cd(int argc, char *argv[]) {
         printf("cd: cannot access '%s'\n", argv[1]);
         return 1;
     }
+    writeHistory("cd");
 
     return 0;
 }
@@ -159,17 +190,111 @@ int write(int argc, char *argv[]) {
 
     fputc('\n', file);
     fclose(file);
+    writeHistory("write");
 
     return 0;
 }
 
+int rename_(int argc, char *argv[]) {
+    if (argc == 3) rename(argv[1], argv[2]);
+    else printEvent("ERROR", "Usage: <oldFileName> <newFileName>", "red");
+    writeHistory("rename");
+    return 0;
+}
+
+int countLines(int argc, char *argv[]) {
+    if (argc != 2) {
+        printf("Usage: countLines <filename>\n");
+        return 1;
+    }
+
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "%s/%s", baseDir, argv[1]);
+
+    FILE *file = fopen(path, "r");
+    if (!file) {
+        printf("[ERROR] Cannot open file: %s\n", argv[1]);
+        return 1;
+    }
+
+    int lines = 0;
+    int ch;
+
+    while ((ch = fgetc(file)) != EOF) {
+        if (ch == '\n') {
+            lines++;
+        }
+    }
+
+    fseek(file, -1, SEEK_END);
+    ch = fgetc(file);
+    if (ch != '\n') {
+        lines++;
+    }
+
+    fclose(file);
+
+    writeHistory("cl");
+    printf("%d\n", lines);
+    return 0;
+}
+
+int copy(int argc, char *argv[]) {
+    if (argc != 3) {
+        printf("Usage: copy <source> <destination>\n");
+        return 0;
+    }
+
+    char pathFrom[MAX_PATH];
+    char pathTo[MAX_PATH];
+
+    // Формуємо абсолютні шляхи
+    snprintf(pathFrom, sizeof(pathFrom), "%s/%s", baseDir, argv[1]);
+    snprintf(pathTo, sizeof(pathTo), "%s/%s", baseDir, argv[2]);
+
+    FILE *src = fopen(pathFrom, "rb");
+    if (!src) {
+        printf("File not found: %s\n", argv[1]);
+        return 0;
+    }
+
+    FILE *dst = fopen(pathTo, "wb");
+    if (!dst) {
+        fclose(src);
+        printf("Cannot create file: %s\n", argv[2]);
+        return 0;
+    }
+
+    char buffer[4096];
+    size_t bytes;
+
+    // Копіюємо блоками
+    while ((bytes = fread(buffer, 1, sizeof(buffer), src)) > 0) {
+        fwrite(buffer, 1, bytes, dst);
+    }
+
+    fclose(src);
+    fclose(dst);
+
+    // Записуємо в історію
+    char histPath[MAX_PATH];
+    snprintf(histPath, sizeof(histPath), "%s/%s", baseDir, "data/history.txt");
+    writeToFile("copy", histPath);
+
+    printf("Copied: %s -> %s\n", argv[1], argv[2]);
+    return 1;
+}
+
 void init_fs() {
-    addCommand("touch", touch);
-    addCommand("cat", cat);
+    addCommand("create", create);
+    addCommand("read", read);
     addCommand("ls", ls);
     addCommand("rm", rm);
     addCommand("cd", cd);
     addCommand("mkdir", mkdir_cmd);
     addCommand("rmdir", rmdir_cmd);
     addCommand("write", write);
+    addCommand("rename", rename_);
+    addCommand("cl", countLines);
+    addCommand("copy", copy);
 }
