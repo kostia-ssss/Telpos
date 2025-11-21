@@ -5,6 +5,7 @@
 #include "commands.h"
 #include "../utils/utils.h"
 #include "../modules/fileSystem.h"
+#include "../modules/converter.h"
 
 char baseDir[MAX_PATH];
 
@@ -42,7 +43,7 @@ int main(void) {
     addCommand("history", history);
 
     init_fs();
-    
+    init_c();
 
     char input[256];
     char *argv[10];
