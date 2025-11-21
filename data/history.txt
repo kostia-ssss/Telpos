@@ -16,3 +16,5 @@ theme
 cd
 grep
 grep
+theme
+help
