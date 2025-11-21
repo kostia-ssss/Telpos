@@ -3,6 +3,21 @@
 #include "../utils/utils.h"
 #include "../source/commands.h"
 
+int cl(const char *filePath) {
+    FILE *file = fopen(filePath, "r");
+    if (!file) return -1;  // помилка відкриття файлу
+
+    int lines = 0;
+    char c;
+
+    while ((c = fgetc(file)) != EOF) {
+        if (c == '\n') lines++;
+    }
+
+    fclose(file);
+    return lines;
+}
+
 int create(int argc, char *argv[]) {
     if (argc != 2) {
         printf("Usage: create <filename>\n");
@@ -285,6 +300,117 @@ int copy(int argc, char *argv[]) {
     return 1;
 }
 
+int head(int argc, char *argv[]) {
+    if (argc != 3) {
+        printf("Usage: head <file> <lines>\n");
+        return 1;
+    }
+
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "%s/%s", baseDir, argv[1]);
+
+    FILE *f = fopen(path, "r");
+    if (!f) {
+        printf("Cannot open file: %s\n", argv[1]);
+        return 1;
+    }
+
+    int n = atoi(argv[2]);
+    if (n <= 0) n = 10;  // дефолт 10 рядків
+    char buffer[256]; 
+
+    int current = 0;
+    while (fgets(buffer, sizeof(buffer), f)) {
+        if (current < n) {
+            printf("%s", buffer);  // потрібно виводити весь рядок
+        } else {
+            break;
+        }
+        current++;
+    }
+
+    fclose(f);
+
+    // запис в історію
+    char histPath[MAX_PATH];
+    snprintf(histPath, sizeof(histPath), "%s/data/history.txt", baseDir);
+    writeToFile("head", histPath);
+
+    return 0;
+}
+
+int tail(int argc, char *argv[]) {
+    if (argc != 3) {
+        printf("Usage: tail <file> <lines>\n");
+        return 1;
+    }
+
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "%s/%s", baseDir, argv[1]);
+
+    FILE *f = fopen(path, "r");
+    if (!f) {
+        printf("Cannot open file: %s\n", argv[1]);
+        return 1;
+    }
+
+    int n = atoi(argv[2]);
+    if (n <= 0) n = 10;
+
+    // Спершу рахуємо рядки
+    int total = 0;
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), f)) total++;
+
+    int startLine = total - n;
+    if (startLine < 0) startLine = 0;
+
+    // Повертаємося на початок
+    fseek(f, 0, SEEK_SET);
+
+    int current = 0;
+    while (fgets(buffer, sizeof(buffer), f)) {
+        if (current >= startLine) printf("%s", buffer);
+        current++;
+    }
+
+    fclose(f);
+
+    // запис в історію
+    char histPath[MAX_PATH];
+    snprintf(histPath, sizeof(histPath), "%s/data/history.txt", baseDir);
+    writeToFile("tail", histPath);
+
+    return 0;
+}
+
+int grep(int argc, char *argv[]) {
+    if (argc != 3) {
+        printf("Usage: grep <text> <file>\n");
+        return 1;
+    }
+
+    char *text = argv[1];
+    FILE *file = fopen(argv[2], "r");
+
+    if (!file) {
+        printf("Cannot open file\n");
+        return 1;
+    }
+
+    char buffer[512];
+
+    while (fgets(buffer, sizeof(buffer), file)) {
+        if (strstr(buffer, text)) {     // якщо text міститься у buffer
+            printf("%s", buffer);       // вивести рядок
+        }
+    }
+
+    fclose(file);
+    writeHistory("grep");
+    return 0;
+}
+
 void init_fs() {
     addCommand("create", create);
     addCommand("read", read);
@@ -297,4 +423,7 @@ void init_fs() {
     addCommand("rename", rename_);
     addCommand("cl", countLines);
     addCommand("copy", copy);
+    addCommand("head", head);
+    addCommand("tail", tail);
+    addCommand("grep", grep);
 }
