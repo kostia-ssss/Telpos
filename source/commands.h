@@ -10,6 +10,7 @@ typedef struct Command {
 
 extern Command *commands; 
 extern int commandsCount; 
+extern time_t startTime;
 extern char baseDir[MAX_PATH];
 
 void addCommand(char *name, int (*func)(int argc, char *argv[]));
@@ -22,6 +23,7 @@ int clear(int argc, char *argv[]);
 int timer(int argc, char *argv[]);
 int time_(int argc, char *argv[]);
 int history(int argc, char *argv[]);
+int uptime(int argc, char *argv[]);
 int clear_(void);
 
 #endif

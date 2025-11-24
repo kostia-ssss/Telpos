@@ -1,13 +1,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #include <windows.h>
 #include "commands.h"
 #include "../utils/utils.h"
 #include "../modules/fileSystem.h"
 #include "../modules/converter.h"
+#include "../modules/textModder.h"
 
 char baseDir[MAX_PATH];
+
+time_t startTime;
 
 int main(void) {
     GetCurrentDirectoryA(MAX_PATH, baseDir);
@@ -26,6 +30,8 @@ int main(void) {
         free(textC);
         free(bgC);
     }
+
+    startTime = time(NULL);
     
     clear_();
     printf("Welcome to Telpos!\n");
@@ -41,9 +47,11 @@ int main(void) {
     addCommand("timer", timer);
     addCommand("time", time_);
     addCommand("history", history);
+    addCommand("uptime", uptime);
 
     init_fs();
     init_c();
+    init_textSys();
 
     char input[256];
     char *argv[10];

@@ -8,6 +8,7 @@
 
 Command *commands = NULL;
 int commandsCount = 0;
+unsigned long long workingTime = 0;
 
 // --- очищення консолі ---
 int clear_(void) {
@@ -193,6 +194,18 @@ int history(int argc, char *argv[]) {
         printf("%d: %s", lineNum++, line);
     }
 
+    writeHistory("history");
+
     fclose(file);
     return 1;
+}
+
+int uptime(int argc, char *argv[]) {
+    time_t now = time(NULL);
+    time_t diff = now - startTime; // секунди з моменту запуску
+
+    printf("%lld seconds since start of working.\n", (long long)diff);
+
+    writeHistory("uptime");
+    return 0;
 }

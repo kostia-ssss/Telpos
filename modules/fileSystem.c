@@ -401,8 +401,8 @@ int grep(int argc, char *argv[]) {
     char buffer[512];
 
     while (fgets(buffer, sizeof(buffer), file)) {
-        if (strstr(buffer, text)) {     // якщо text міститься у buffer
-            printf("%s", buffer);       // вивести рядок
+        if (strstr(buffer, text)) {     
+            printf("%s", buffer);       
         }
     }
 

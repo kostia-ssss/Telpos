@@ -4,6 +4,7 @@
         "filesystem.h": "c",
         "utils.h": "c",
         "windows.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "converter.h": "c"
     }
 }
