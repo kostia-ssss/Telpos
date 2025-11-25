@@ -52,3 +52,7 @@ history
 history
 theme
 help
+theme
+help
+theme
+help

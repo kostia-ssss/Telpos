@@ -58,10 +58,21 @@ It includes essential utilities for working with files, directories, text proces
 
 ---
 
+### Text & Numbers Commands
+
+| Command | Description |
+|--------|-------------|
+| `encode` | Encodes text |
+| `reverse` | Flipes text |
+| `convert` | Converts number to system (101010001, 120121220) |
+| `calc` | Calculates numbers |
+
+---
+
 ## 🔧 Installation (Windows)
 
 ```bash
 git clone https://github.com/kostia-ssss/Telpos
 cd Telpos
 mkdir build
-gcc source/main.c source/commands.c -o build/Telpos.exe
+gcc source/main.c source/commands.c utils/utils.c modules/fileSystem.c modules/converter.c modules/textModder.c -o build/telpos.exe
